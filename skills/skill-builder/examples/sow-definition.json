@@ -1,0 +1,286 @@
+{
+  "metadata": {
+    "name": "sow-generator",
+    "description": "Statement of Work (SOW) generator for Equinox IT - creates consistent, professional SOWs from user input",
+    "version": "1.0.0",
+    "author": "Equinox IT",
+    "category": "business",
+    "tags": ["sow", "document", "generator", "consulting"]
+  },
+  "purpose": "Generate consistent, repeatable high-quality Statements of Work using the SOW_Simple_Service_Template.DOCX",
+  "tone": "Professional, client-facing consulting tone. No fluff; concise, confident, but friendly. Content should be consistent even if user notes are scrappy.",
+  "placeholders": [
+    {
+      "name": "SOW_NUMBER_AND_TITLE",
+      "description": "The number of the SOW and the Title of the Work. Format: 'Company Name - SOWnn - Name of the work'",
+      "type": "string",
+      "format": "Company Name - SOW## - Work Name",
+      "required": true,
+      "validation": "pattern:^[A-Z][A-Za-z0-9 ]+ - SOW\\d+ - .+"
+    },
+    {
+      "name": "SOW_CONSULTANT",
+      "description": "Name(s) of the Equinox consultant(s) engaged in the work",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_CONSULTANTS_ROLE",
+      "description": "Role title of the Equinox consultant(s)",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_SERVICE_DESCRIPTION",
+      "description": "High level description of service being provided. Usually a block of text and then high level bullets listing key services",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_ASSUMPTIONS",
+      "description": "All assumptions needed to allow successful delivery of the Service Description",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_EXCLUSIONS",
+      "description": "Things excluded from the engagement. Brief statement followed by bullet points",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_FORMAL_DELIVERABLES",
+      "description": "What will be produced and delivered by Equinox IT (scripts, documents, terraform, applications, etc.)",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_CLIENT_BILLING_CONTACT",
+      "description": "Name of the Billing Contact",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_BILLING_CONTACT_COMPANY_NAME",
+      "description": "Billing Contact Company Name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_BILLING_CONTACT_EMAIL",
+      "description": "Email for the billing contact",
+      "type": "email",
+      "required": true,
+      "validation": "email"
+    },
+    {
+      "name": "SOW_REPORTING",
+      "description": "Description of reporting to be done during the SOW (weekly project letter, etc.)",
+      "type": "string",
+      "required": false,
+      "default": "This is a small SOW - no reporting will be provided"
+    },
+    {
+      "name": "SOW_BILLING_BASIS",
+      "description": "Whether engagement is Fixed Cost or Time and Materials",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "required": true
+    },
+    {
+      "name": "SOW_TASK_DESCRIPTION",
+      "description": "Bullet point tasks as a plan of action the Consultant will carry out",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_TASK_HOURS",
+      "description": "Estimate of hours for each task in SOW_TASK_DESCRIPTION",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_HOURLY_RATE",
+      "description": "Hourly rate in NZ Dollars",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_COST_HOURS",
+      "description": "Total hours (sum of all SOW_TASK_HOURS)",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_COST_AMOUNT",
+      "description": "Total cost (SOW_COST_HOURS × SOW_HOURLY_RATE)",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_CLIENT_NAME",
+      "description": "Company name entering into the SOW with Equinox IT",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "workflow": {
+    "conditionals": [
+      {
+        "condition": "User says 'autocomplete' or 'dump in notes'",
+        "action": "Prompt for all notes at once, auto-fill all sections"
+      },
+      {
+        "condition": "User says 'step-by-step' or 'walk through'",
+        "action": "Walk through each placeholder sequentially"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Get SOW Number and Title",
+        "description": "Prompt for the SOW number and title. Format: 'Company Name - SOWnn - Name of the work'",
+        "promptsFor": ["SOW_NUMBER_AND_TITLE"],
+        "validation": "pattern"
+      },
+      {
+        "title": "Get Consultant Details",
+        "description": "Prompt for consultant name(s) and role title. Check if multiple consultants.",
+        "promptsFor": ["SOW_CONSULTANT", "SOW_CONSULTANTS_ROLE"]
+      },
+      {
+        "title": "Get Service Description",
+        "description": "Ask for service description or offer to create one for review",
+        "promptsFor": ["SOW_SERVICE_DESCRIPTION"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Assumptions",
+        "description": "Ask for assumptions or offer to draft based on service description",
+        "promptsFor": ["SOW_ASSUMPTIONS"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Exclusions",
+        "description": "Suggest exclusions based on service description and assumptions, ask for review",
+        "promptsFor": ["SOW_EXCLUSIONS"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Deliverables",
+        "description": "Ask for deliverables or suggest based on service description and assumptions",
+        "promptsFor": ["SOW_FORMAL_DELIVERABLES"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Billing Contact",
+        "description": "Prompt for billing contact name, company, and email",
+        "promptsFor": ["SOW_CLIENT_BILLING_CONTACT", "SOW_BILLING_CONTACT_COMPANY_NAME", "SOW_BILLING_CONTACT_EMAIL"],
+        "validation": "email"
+      },
+      {
+        "title": "Get Reporting",
+        "description": "Ask for reporting requirements. For small SOWs, suggest 'no reporting'. For larger ones, suggest weekly project letter.",
+        "promptsFor": ["SOW_REPORTING"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Billing Basis",
+        "description": "Ask if engagement is Fixed Cost or Time and Materials",
+        "promptsFor": ["SOW_BILLING_BASIS"],
+        "validation": "enum"
+      },
+      {
+        "title": "Get Task Descriptions",
+        "description": "Ask for task breakdown or offer to create. List as bullet points showing plan of high-level tasks.",
+        "promptsFor": ["SOW_TASK_DESCRIPTION"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Task Hours",
+        "description": "Suggest hour estimates for each task. Show to user for approval. Ensure order matches task descriptions.",
+        "promptsFor": ["SOW_TASK_HOURS"],
+        "validation": "numeric",
+        "offerSuggestion": true
+      },
+      {
+        "title": "Get Hourly Rate",
+        "description": "Prompt for hourly rate in NZ Dollar format",
+        "promptsFor": ["SOW_HOURLY_RATE"],
+        "validation": "numeric"
+      },
+      {
+        "title": "Calculate Total Cost",
+        "description": "Automatically calculate SOW_COST_AMOUNT = SOW_COST_HOURS × SOW_HOURLY_RATE",
+        "promptsFor": ["SOW_COST_AMOUNT"]
+      },
+      {
+        "title": "Get Client Name",
+        "description": "Prompt for the company name entering into the SOW",
+        "promptsFor": ["SOW_CLIENT_NAME"]
+      },
+      {
+        "title": "Review SOW",
+        "description": "Show complete SOW in preview for user to review and edit",
+        "promptsFor": []
+      },
+      {
+        "title": "Generate Document",
+        "description": "Generate final MS Word document using SOW_Simple_Service_Template.DOCX. Sanitize filename (remove /, \\, :, etc.)",
+        "promptsFor": []
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "SOW_NUMBER_AND_TITLE",
+      "type": "pattern",
+      "pattern": "^[A-Z][A-Za-z0-9 ]+ - SOW\\d+ - .+",
+      "message": "Title must be in format: 'Company Name - SOW## - Work Name'"
+    },
+    {
+      "field": "SOW_TASK_HOURS",
+      "type": "numeric",
+      "message": "Hours must be a number (e.g., 40, not 'forty')"
+    },
+    {
+      "field": "SOW_HOURLY_RATE",
+      "type": "numeric",
+      "message": "Rate must be a number in NZD"
+    },
+    {
+      "field": "SOW_COST_AMOUNT",
+      "type": "numeric",
+      "message": "Total cost must be a number"
+    },
+    {
+      "field": "SOW_BILLING_CONTACT_EMAIL",
+      "type": "email",
+      "message": "Email must contain @"
+    },
+    {
+      "field": "SOW_BILLING_BASIS",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "message": "Must be 'Fixed Cost' or 'Time and Materials'"
+    }
+  ],
+  "templates": [
+    "SOW_Simple_Service_Template.DOCX"
+  ],
+  "examples": [
+    {
+      "title": "SOW Number and Title",
+      "description": "Correct format for SOW title",
+      "code": "Acme Corp - SOW01 - Cloud Migration Assessment"
+    },
+    {
+      "title": "Numeric Validation",
+      "description": "Hours must be numeric",
+      "code": "SOW_TASK_HOURS: 40 (not 'forty hours')"
+    }
+  ]
+}

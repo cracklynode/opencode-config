@@ -1,0 +1,11 @@
+---
+name: {{name}}
+description: {{description}}
+version: {{version}}
+author: {{author}}
+type: skill
+category: {{category}}
+tags:
+  - {{tag1}}
+  - {{tag2}}
+---
