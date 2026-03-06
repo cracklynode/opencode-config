@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "name": "project-manager",
+    "description": "Manages project workspaces with persistent context and memory across sessions",
+    "version": "1.0.0",
+    "author": "Nick Foard",
+    "category": "business",
+    "tags": ["project", "workspace", "memory", "context", "documents"]
+  },
+  "purpose": "Load project context (instructions.md, project_memory.md, documents), maintain conversation history across sessions, create new projects, and parse reference documents",
+  "tone": "Helpful, professional, proactive in maintaining project memory",
+  "placeholders": [
+    {
+      "name": "PROJECT_PARENT_PATH",
+      "description": "The parent folder containing all projects",
+      "type": "string",
+      "required": true,
+      "default": "C:/Users/nick.foard/Projects"
+    },
+    {
+      "name": "PROJECT_NAME",
+      "description": "The name of the project folder",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "PROJECT_DESCRIPTION",
+      "description": "Brief description of the project purpose",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "CUSTOM_INSTRUCTIONS",
+      "description": "Custom instructions or workflow preferences for this project",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "DOCUMENT_PATHS",
+      "description": "Paths to documents to parse and index",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "workflow": {
+    "conditionals": [
+      {
+        "condition": "User says 'list projects' or 'show projects' or 'what projects do I have'",
+        "action": "Scan PROJECT_PARENT_PATH for folders containing project.json, present numbered list to user"
+      },
+      {
+        "condition": "User says 'load project' or 'switch to project' or 'work on project' with no specific name",
+        "action": "Scan PROJECT_PARENT_PATH for folders containing project.json, present list to user, then load selected project"
+      },
+      {
+        "condition": "User provides a specific project name (e.g., 'load sales-proposal-2026')",
+        "action": "Verify project exists with project.json, load its project.json, instructions.md, and project_memory.md into context"
+      },
+      {
+        "condition": "User says 'create new project' or 'new project' or 'start a project'",
+        "action": "Walk through new project creation workflow: get name, description, optional custom instructions, create folder structure"
+      },
+      {
+        "condition": "User says 'index documents' or 'parse documents' or 'load documents'",
+        "action": "Scan documents/ folder, parse each file (Excel, Word, PDF, PPTX), create indexed content for reference"
+      }
+    ],
+    "steps": [
+      {
+        "title": "List Available Projects",
+        "description": "Scan PROJECT_PARENT_PATH for folders containing project.json and display as numbered list",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Load Project Context",
+        "description": "Read project.json, instructions.md, and project_memory.md from selected project. Summarize instructions.md for quick reference.",
+        "promptsFor": ["PROJECT_NAME"],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Confirm Loaded",
+        "description": "Tell user what was loaded: project name, custom instructions summary, previous session count, document count",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Update Project Memory",
+        "description": "After each Q&A, append to project_memory.md: Date, User Question (summary), Response Summary (key points), Files Referenced",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Create New Project",
+        "description": "Create folder structure: PROJECT_NAME/, PROJECT_NAME/documents/, PROJECT_NAME/project.json (from template), PROJECT_NAME/instructions.md (from template with customizations), PROJECT_NAME/project_memory.md (blank)",
+        "promptsFor": ["PROJECT_NAME", "PROJECT_DESCRIPTION", "CUSTOM_INSTRUCTIONS"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Index Documents",
+        "description": "Scan documents/ folder, parse each supported file type, create a documents-index.md with extracted text content for each file",
+        "promptsFor": ["DOCUMENT_PATHS"],
+        "offerSuggestion": false
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "PROJECT_PARENT_PATH",
+      "type": "pattern",
+      "pattern": "^[A-Za-z]:[/\\\\].+",
+      "message": "Must be a valid Windows path"
+    },
+    {
+      "field": "PROJECT_NAME",
+      "type": "pattern",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "message": "Only letters, numbers, hyphens and underscores allowed"
+    }
+  ],
+  "templates": [
+    "templates/project.json",
+    "templates/instructions.md",
+    "templates/project_memory.md",
+    "templates/create-project.sh",
+    "templates/parse-documents.js"
+  ],
+  "examples": [
+    {
+      "title": "List all projects",
+      "description": "User wants to see what projects exist",
+      "code": "User: What projects do I have?\nSkill: Scanning C:/Users/nick.foard/Projects... Found 3 projects:\n1. Sales-Proposal-2026\n2. Q1-Marketing-Campaign\n3. Client-Onboarding-Process\nWhich one would you like to work on?"
+    },
+    {
+      "title": "Load existing project",
+      "description": "User wants to work on a specific project",
+      "code": "User: Load the Sales-Proposal-2026 project\nSkill: Loading project...\n- Loaded project.json\n- Loaded instructions.md (3 custom rules)\n- Loaded project_memory.md (2 previous sessions)\n- Found 5 documents in documents/ folder\nReady to help with Sales-Proposal-2026"
+    },
+    {
+      "title": "Create new project",
+      "description": "User wants to start a new project",
+      "code": "User: Create a new project called Q1-Marketing-Campaign for planning Q1 marketing activities\nSkill: Creating project structure...\nCreated: C:/Users/nick.foard/Projects/Q1-Marketing-Campaign/\nCreated: documents/\nCreated: project.json\nCreated: instructions.md (with your custom instructions)\nCreated: project_memory.md\nProject ready! Would you like to add any reference documents now?"
+    },
+    {
+      "title": "Index documents",
+      "description": "User wants to parse reference documents",
+      "code": "User: Index the documents in this project\nSkill: Scanning documents/ folder...\nFound 4 files:\n- budget-2026.xlsx (parsing Excel...)\n- requirements.docx (parsing Word...)\n- presentation.pptx (parsing PowerPoint...)\n- specs.pdf (parsing PDF...)\nCreated: documents-index.md with all extracted content\nDocuments indexed and ready for Q&A"
+    }
+  ]
+}

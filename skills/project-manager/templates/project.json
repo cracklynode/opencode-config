@@ -1,0 +1,10 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "1.0.0",
+  "created": "{{DATE}}",
+  "description": "Project description here",
+  "documentsFolder": "documents",
+  "instructionsFile": "instructions.md",
+  "memoryFile": "project_memory.md",
+  "tags": []
+}

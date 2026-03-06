@@ -10,6 +10,27 @@
         "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}"
       }
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"]
+    },
+    "word": {
+      "type": "local",
+      "command": ["uvx", "--from", "office-word-mcp-server", "word_mcp_server.exe"]
+    },
+    "excel": {
+      "type": "local",
+      "command": ["uvx", "excel-mcp-server", "stdio"]
+    },
+    "powerpoint": {
+      "type": "local",
+      "command": ["uvx", "--from", "office-powerpoint-mcp-server", "ppt_mcp_server.exe"]
+    },
+    "azure-devops": {
+      "type": "local",
+      "command": ["npx", "-y", "@azure-devops/mcp", "EquinoxIT"],
+      "enabled": true
     }
   }
 }
