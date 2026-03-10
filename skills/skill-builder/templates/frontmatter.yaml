@@ -1,6 +1,6 @@
 ---
 name: {{name}}
-description: {{description}}
+description: {{description}}. Use when user says {{triggers}}.
 version: {{version}}
 author: {{author}}
 type: skill
@@ -8,4 +8,6 @@ category: {{category}}
 tags:
   - {{tag1}}
   - {{tag2}}
+metadata:
+  mcp: {{mcp}}
 ---

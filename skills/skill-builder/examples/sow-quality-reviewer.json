@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "name": "sow-quality-reviewer",
+    "description": "Quality review agent for evaluating Statement of Work (SOW) documents against internal standards",
+    "version": "1.0.0",
+    "author": "Equinox IT",
+    "category": "business",
+    "tags": ["sow", "quality", "review", "document", "compliance"]
+  },
+  "triggers": [
+    "review an SOW",
+    "quality check SOW",
+    "evaluate SOW compliance",
+    "SOW audit",
+    "check SOW standards"
+  ],
+  "when_to_use": "This skill activates when the user wants to review and evaluate a Statement of Work document for compliance with internal quality standards.",
+  "mcp": "word",
+  "purpose": "Evaluate SOW documents against internal standards checklist and provide concise feedback",
+  "tone": "Professional, objective, factual. Focus on compliance and quality, not sales language.",
+  "placeholders": [
+    {
+      "name": "SOW_DOCUMENT",
+      "description": "The uploaded Word document (.docx) to review",
+      "type": "file",
+      "required": true
+    },
+    {
+      "name": "CLIENT_LEGAL_NAME",
+      "description": "Full legal client name from companies-register.companiesoffice.govt.nz",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "CLIENT_ABBREVIATION",
+      "description": "Abbreviation to use in SOW title",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_NUMBER",
+      "description": "SOW number (e.g., SOW01)",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "PROJECT_NAME",
+      "description": "Full project name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "BILLING_TYPE",
+      "description": "Billing type: Fixed Cost or Time and Materials",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "required": true
+    },
+    {
+      "name": "PRICING_MATCHES_ACCELO",
+      "description": "Confirm pricing milestones match Accelo and invoices",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "TECHNICAL_REVIEW",
+      "description": "Evidence of Technical/Delivery review",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "COMMERCIAL_REVIEW",
+      "description": "Evidence of Commercial review",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "IS_DRAFT",
+      "description": "Is this a draft document (should have watermark)?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "ACCELO_SALE_CREATED",
+      "description": "Has a Sale in Accelo been created?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "name": "PIPELINE_UPDATED",
+      "description": "Has pipeline status been updated?",
+      "type": "boolean",
+      "required": true
+    }
+  ],
+  "workflow": {
+    "conditionals": [
+      {
+        "condition": "Billing type is Time and Materials",
+        "action": "Skip Project Coordination and Contingency checks"
+      },
+      {
+        "condition": "Billing type is Fixed Cost",
+        "action": "Verify Project Coordination (10-20%) and Contingency (10-30%) are included"
+      },
+      {
+        "condition": "Document is marked as Draft",
+        "action": "Verify draft watermark is present"
+      },
+      {
+        "condition": "Document is Final",
+        "action": "Verify no draft watermark, check for pre-signature or client e-signature"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Request Document Upload",
+        "description": "Prompt user to upload the full Word document (.docx) version of the SOW for review",
+        "mcp_tool": "word_open_document",
+        "parameters": ["SOW_DOCUMENT"],
+        "promptsFor": ["SOW_DOCUMENT"]
+      },
+      {
+        "title": "Review Naming & Structure",
+        "description": "Check SOW naming format: 'Client short-name – SOW# – Project Name / Scope'. Verify client legal name from companies-register.companiesoffice.govt.nz with abbreviation.",
+        "mcp_tool": "word_read_content",
+        "parameters": ["title", "first_paragraph"],
+        "promptsFor": ["CLIENT_LEGAL_NAME", "CLIENT_ABBREVIATION", "SOW_NUMBER", "PROJECT_NAME"]
+      },
+      {
+        "title": "Review Content - Scope, Exclusions, Assumptions",
+        "description": "Check that Scope, Exclusions, and Assumptions are clearly defined with focus on risk and change management.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["Scope", "Exclusions", "Assumptions"],
+        "promptsFor": []
+      },
+      {
+        "title": "Review Deliverables",
+        "description": "Verify Deliverables are clearly stated as tangible artifacts left with the client.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["Deliverables"],
+        "promptsFor": []
+      },
+      {
+        "title": "Review Pricing",
+        "description": "Ask user to manually check Pricing Milestones match Accelo and invoices. Verify milestones are broad (no lines under 20 hours).",
+        "mcp_tool": "word_read_table",
+        "parameters": ["pricing_table"],
+        "promptsFor": ["PRICING_MATCHES_ACCELO"]
+      },
+      {
+        "title": "Review Project Coordination (Fixed Cost only)",
+        "description": "For Fixed Cost: Verify Project Coordination (10–20%) is included. Skip for T&M.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["Project Coordination"],
+        "promptsFor": ["BILLING_TYPE"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Review Contingency (Fixed Cost only)",
+        "description": "For Fixed Cost: Verify Contingency (10–30%) is included. Skip for T&M.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["Contingency"],
+        "promptsFor": ["BILLING_TYPE"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Review Evidence of Reviews",
+        "description": "Check for evidence of both Technical/Delivery and Commercial reviews.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["review", "approved"],
+        "promptsFor": ["TECHNICAL_REVIEW", "COMMERCIAL_REVIEW"]
+      },
+      {
+        "title": "Check Draft Watermark",
+        "description": "Verify draft watermark is used appropriately if document is not final.",
+        "mcp_tool": "word_check_watermark",
+        "parameters": [],
+        "promptsFor": ["IS_DRAFT"]
+      },
+      {
+        "title": "Review Key Principles",
+        "description": "Check language is factual/concise (not sales-oriented), avoid content duplication, verify milestones broad (no lines under 20 hours), Approach has headlines and bullet points.",
+        "mcp_tool": "word_read_content",
+        "parameters": ["Approach", "Scope", "Costs"],
+        "promptsFor": []
+      },
+      {
+        "title": "Review Formatting",
+        "description": "Check: bullet points used (not numbered lists), table rows don't break across pages, footer consistent with SOW name, signature section not orphaned.",
+        "mcp_tool": "word_check_formatting",
+        "parameters": [],
+        "promptsFor": []
+      },
+      {
+        "title": "Check Final Steps",
+        "description": "Verify SOW is pre-signed or ready for client e-signature. Check Sale created in Accelo and pipeline status updated.",
+        "mcp_tool": "word_search_content",
+        "parameters": ["signature", "signed"],
+        "promptsFor": ["ACCELO_SALE_CREATED", "PIPELINE_UPDATED"]
+      },
+      {
+        "title": "Generate Review Report",
+        "description": "Compile feedback using categories: Compliant, Needs Attention (with suggestion), Missing (with explanation). Ignore other reviewers' comments.",
+        "mcp_tool": "word_create_document",
+        "parameters": ["review_report"],
+        "promptsFor": []
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "SOW_DOCUMENT",
+      "type": "enum",
+      "values": [".docx"],
+      "message": "Must be a Word document (.docx)"
+    },
+    {
+      "field": "BILLING_TYPE",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "message": "Must be 'Fixed Cost' or 'Time and Materials'"
+    }
+  ],
+  "templates": [],
+  "examples": [
+    {
+      "title": "Full SOW Quality Review",
+      "user_says": "Please review this SOW for quality compliance",
+      "actions": [
+        "Request user to upload the SOW Word document",
+        "Review naming format against client details",
+        "Check Scope, Exclusions, Assumptions sections",
+        "Verify Deliverables are tangible artifacts",
+        "Check pricing milestones (ask user to verify Accelo match)",
+        "For Fixed Cost: verify Project Coordination and Contingency",
+        "Check for Technical and Commercial review evidence",
+        "Verify draft watermark if not final",
+        "Review key principles (language, duplication, milestones)",
+        "Check formatting (bullets, tables, footer, signature)",
+        "Check final steps (signature, Accelo, pipeline)",
+        "Generate review report"
+      ],
+      "result": "Complete quality review report with Compliant/Needs Attention/Missing status for each item"
+    },
+    {
+      "title": "Fixed Cost SOW Review",
+      "user_says": "Review this Fixed Cost SOW",
+      "actions": [
+        "Upload document",
+        "Verify Project Coordination (10-20%) included",
+        "Verify Contingency (10-30%) included",
+        "Complete standard checklist"
+      ],
+      "result": "Review includes Project Coordination and Contingency checks"
+    },
+    {
+      "title": "T&M SOW Review",
+      "user_says": "Review this Time and Materials SOW",
+      "actions": [
+        "Upload document",
+        "Skip Project Coordination check",
+        "Skip Contingency check",
+        "Complete standard checklist"
+      ],
+      "result": "Review excludes Project Coordination and Contingency (not applicable for T&M)"
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Cannot open document",
+      "cause": "File is not .docx or is corrupted",
+      "solution": "Ensure the uploaded file is a valid Word document (.docx)"
+    },
+    {
+      "error": "Missing client legal name check",
+      "cause": "User didn't verify against companies-register.companiesoffice.govt.nz",
+      "solution": "Ask user to manually check the full legal client name"
+    },
+    {
+      "error": "Pricing milestones too detailed",
+      "cause": "Individual line items under 20 hours",
+      "solution": "Consolidate into broader milestone categories"
+    },
+    {
+      "error": "Content duplication",
+      "cause": "Same content repeated in Scope, Approach, and Costs sections",
+      "solution": "Remove duplication - each section should be unique"
+    }
+  ]
+}

@@ -7,6 +7,15 @@
     "category": "business",
     "tags": ["sow", "document", "generator", "consulting"]
   },
+  "triggers": [
+    "create an SOW",
+    "generate a statement of work",
+    "make a service agreement",
+    "create a consulting contract",
+    "draft an SOW"
+  ],
+  "when_to_use": "This skill activates when the user wants to create a Statement of Work document for a consulting engagement.",
+  "mcp": "word",
   "purpose": "Generate consistent, repeatable high-quality Statements of Work using the SOW_Simple_Service_Template.DOCX",
   "tone": "Professional, client-facing consulting tone. No fluff; concise, confident, but friendly. Content should be consistent even if user notes are scrappy.",
   "placeholders": [
@@ -143,65 +152,87 @@
       {
         "title": "Get SOW Number and Title",
         "description": "Prompt for the SOW number and title. Format: 'Company Name - SOWnn - Name of the work'",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_NUMBER_AND_TITLE"],
         "promptsFor": ["SOW_NUMBER_AND_TITLE"],
         "validation": "pattern"
       },
       {
         "title": "Get Consultant Details",
         "description": "Prompt for consultant name(s) and role title. Check if multiple consultants.",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_CONSULTANT", "SOW_CONSULTANTS_ROLE"],
         "promptsFor": ["SOW_CONSULTANT", "SOW_CONSULTANTS_ROLE"]
       },
       {
         "title": "Get Service Description",
         "description": "Ask for service description or offer to create one for review",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_SERVICE_DESCRIPTION"],
         "promptsFor": ["SOW_SERVICE_DESCRIPTION"],
         "offerSuggestion": true
       },
       {
         "title": "Get Assumptions",
         "description": "Ask for assumptions or offer to draft based on service description",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_ASSUMPTIONS"],
         "promptsFor": ["SOW_ASSUMPTIONS"],
         "offerSuggestion": true
       },
       {
         "title": "Get Exclusions",
         "description": "Suggest exclusions based on service description and assumptions, ask for review",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_EXCLUSIONS"],
         "promptsFor": ["SOW_EXCLUSIONS"],
         "offerSuggestion": true
       },
       {
         "title": "Get Deliverables",
         "description": "Ask for deliverables or suggest based on service description and assumptions",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_FORMAL_DELIVERABLES"],
         "promptsFor": ["SOW_FORMAL_DELIVERABLES"],
         "offerSuggestion": true
       },
       {
         "title": "Get Billing Contact",
         "description": "Prompt for billing contact name, company, and email",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_CLIENT_BILLING_CONTACT", "SOW_BILLING_CONTACT_COMPANY_NAME", "SOW_BILLING_CONTACT_EMAIL"],
         "promptsFor": ["SOW_CLIENT_BILLING_CONTACT", "SOW_BILLING_CONTACT_COMPANY_NAME", "SOW_BILLING_CONTACT_EMAIL"],
         "validation": "email"
       },
       {
         "title": "Get Reporting",
         "description": "Ask for reporting requirements. For small SOWs, suggest 'no reporting'. For larger ones, suggest weekly project letter.",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_REPORTING"],
         "promptsFor": ["SOW_REPORTING"],
         "offerSuggestion": true
       },
       {
         "title": "Get Billing Basis",
         "description": "Ask if engagement is Fixed Cost or Time and Materials",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_BILLING_BASIS"],
         "promptsFor": ["SOW_BILLING_BASIS"],
         "validation": "enum"
       },
       {
         "title": "Get Task Descriptions",
         "description": "Ask for task breakdown or offer to create. List as bullet points showing plan of high-level tasks.",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_TASK_DESCRIPTION"],
         "promptsFor": ["SOW_TASK_DESCRIPTION"],
         "offerSuggestion": true
       },
       {
         "title": "Get Task Hours",
         "description": "Suggest hour estimates for each task. Show to user for approval. Ensure order matches task descriptions.",
+        "mcp_tool": "word_add_table",
+        "parameters": ["SOW_TASK_HOURS"],
         "promptsFor": ["SOW_TASK_HOURS"],
         "validation": "numeric",
         "offerSuggestion": true
@@ -209,27 +240,37 @@
       {
         "title": "Get Hourly Rate",
         "description": "Prompt for hourly rate in NZ Dollar format",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_HOURLY_RATE"],
         "promptsFor": ["SOW_HOURLY_RATE"],
         "validation": "numeric"
       },
       {
         "title": "Calculate Total Cost",
         "description": "Automatically calculate SOW_COST_AMOUNT = SOW_COST_HOURS × SOW_HOURLY_RATE",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_COST_AMOUNT"],
         "promptsFor": ["SOW_COST_AMOUNT"]
       },
       {
         "title": "Get Client Name",
         "description": "Prompt for the company name entering into the SOW",
+        "mcp_tool": "word_add_paragraph",
+        "parameters": ["SOW_CLIENT_NAME"],
         "promptsFor": ["SOW_CLIENT_NAME"]
       },
       {
         "title": "Review SOW",
         "description": "Show complete SOW in preview for user to review and edit",
+        "mcp_tool": "word_get_document",
+        "parameters": [],
         "promptsFor": []
       },
       {
         "title": "Generate Document",
         "description": "Generate final MS Word document using SOW_Simple_Service_Template.DOCX. Sanitize filename (remove /, \\, :, etc.)",
+        "mcp_tool": "word_save_document",
+        "parameters": ["filename"],
         "promptsFor": []
       }
     ]
@@ -273,14 +314,56 @@
   ],
   "examples": [
     {
-      "title": "SOW Number and Title",
-      "description": "Correct format for SOW title",
-      "code": "Acme Corp - SOW01 - Cloud Migration Assessment"
+      "title": "Create SOW for Cloud Migration",
+      "user_says": "Create an SOW for Acme Corp cloud migration project",
+      "actions": [
+        "Prompt for SOW number and title (e.g., 'Acme Corp - SOW01 - Cloud Migration Assessment')",
+        "Collect consultant name and role",
+        "Ask for service description or suggest based on cloud migration",
+        "Get assumptions (e.g., access to systems, timeline)",
+        "Get exclusions (e.g., hardware procurement, training)",
+        "Get deliverables (e.g., migration plan, documentation)",
+        "Collect billing contact details",
+        "Determine billing basis (Fixed Cost or T&M)",
+        "Break down tasks with hour estimates",
+        "Calculate total cost",
+        "Generate Word document"
+      ],
+      "result": "Complete SOW document saved as 'Acme-Corp-SOW01-Cloud-Migration-Assessment.docx'"
+    },
+    {
+      "title": "SOW Number and Title Format",
+      "user_says": "What's the correct format for the SOW title?",
+      "actions": [
+        "Explain format: 'Company Name - SOW## - Work Name'"
+      ],
+      "result": "Example: 'Acme Corp - SOW01 - Cloud Migration Assessment'"
     },
     {
       "title": "Numeric Validation",
-      "description": "Hours must be numeric",
-      "code": "SOW_TASK_HOURS: 40 (not 'forty hours')"
+      "user_says": "Can I enter hours as 'forty'?",
+      "actions": [
+        "Explain that hours must be numeric",
+        "Give example: '40' not 'forty hours'"
+      ],
+      "result": "User enters numeric value like 40"
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Document not saving",
+      "cause": "Invalid characters in filename (/, \\, :, *, ?, \", <, >, |)",
+      "solution": "Remove special characters from filename. Use hyphens or underscores instead."
+    },
+    {
+      "error": "Email validation fails",
+      "cause": "Email address missing @ symbol",
+      "solution": "Ensure email contains @ and valid domain (e.g., name@company.com)"
+    },
+    {
+      "error": "Total cost calculation wrong",
+      "cause": "Hours or rate entered as text instead of numbers",
+      "solution": "Enter numeric values only (e.g., 80 hours, not 'eighty hours')"
     }
   ]
 }
