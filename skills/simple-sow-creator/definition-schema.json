@@ -1,0 +1,322 @@
+{
+  "metadata": {
+    "name": "simple-sow-creator",
+    "description": "Statement of Work (SOW) generator for Equinox IT - creates consistent, professional SOWs using the SOW_Simple_Service_Template_Latest.docx template",
+    "version": "1.0.0",
+    "author": "Equinox IT",
+    "category": "business",
+    "tags": ["sow", "document", "generator", "consulting", "equinox"]
+  },
+  "triggers": [
+    "create a SOW",
+    "generate a statement of work"
+  ],
+  "when_to_use": "This skill activates when the user wants to create a Statement of Work document for a consulting engagement with Equinox IT.",
+  "mcp": "word",
+  "purpose": "Generate consistent, high-quality Statements of Work using the SOW_Simple_Service_Template_Latest.docx template. Always write in a professional, client-facing consulting tone.",
+  "tone": "Professional, client-facing consulting tone. No fluff; concise, confident, but friendly. Content should be consistent even if user notes are scrappy. Use dot bullets (•) for all lists. Do not use numbered lists.",
+  "placeholders": [
+    {
+      "name": "SOW_NUMBER_AND_TITLE",
+      "description": "SOW number and title. Format: 'Company Name - SOW## - Work Name'",
+      "type": "string",
+      "required": true,
+      "validation": "pattern:^[A-Z][A-Za-z0-9 ]+ - SOW\\d+ - .+"
+    },
+    {
+      "name": "SOW_CONSULTANT",
+      "description": "Name(s) of the Equinox consultant(s) engaged in the work. If multiple consultants, list one per line.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_CONSULTANT_ROLE",
+      "description": "Role title(s) of the Equinox consultant(s). If multiple consultants, list one per line matching SOW_CONSULTANT order.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_CLIENT_NAME",
+      "description": "The full legal name of the client company. Confirm with user by checking Companies Office website.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_SERVICE_DESCRIPTION",
+      "description": "High-level service description. Usually a block of text followed by bullets listing key services. Keep it high-level - don't duplicate what goes in Approach, Assumptions, or Exclusions.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_APPROACH",
+      "description": "Approach bullet points describing how the work will be conducted.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_ASSUMPTIONS",
+      "description": "Delivery assumptions needed for successful delivery. Brief statement followed by bullet points.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_EXCLUSIONS",
+      "description": "Things excluded from the engagement. Brief statement followed by bullet points. Don't duplicate with Service Description, Approach, or Assumptions.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_FORMAL_DELIVERABLES",
+      "description": "What will be produced and delivered by Equinox IT (scripts, documents, terraform, applications, etc.). Brief statement followed by bullet points.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_CLIENT_BILLING_CONTACT",
+      "description": "Name of the billing contact person",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_BILLING_CONTACT_COMPANY_NAME",
+      "description": "Billing contact's company name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_BILLING_CONTACT_EMAIL",
+      "description": "Email address for the billing contact",
+      "type": "email",
+      "required": true,
+      "validation": "email"
+    },
+    {
+      "name": "SOW_REPORTING",
+      "description": "Reporting requirements during the engagement. Default: 'Given the short nature of this assignment, no formal project reporting will be produced'",
+      "type": "string",
+      "required": false,
+      "default": "Given the short nature of this assignment, no formal project reporting will be produced"
+    },
+    {
+      "name": "SOW_BILLING_BASIS",
+      "description": "Billing basis for the engagement",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "required": true
+    },
+    {
+      "name": "SOW_COST_HOURS",
+      "description": "Total hours committed for the assignment. Must be numeric.",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_CONSULTANT_RATE",
+      "description": "Hourly rate in NZ Dollars",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_COST_AMOUNT",
+      "description": "Total cost calculated as SOW_COST_HOURS × SOW_CONSULTANT_RATE",
+      "type": "number",
+      "required": true,
+      "validation": "numeric"
+    },
+    {
+      "name": "SOW_TASK_DESCRIPTION",
+      "description": "Task list as bullet points showing the plan of action. Insert newline-delimited values.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_TASK_HOURS",
+      "description": "Hours for each task in SOW_TASK_DESCRIPTION. Insert newline-delimited values matching task order.",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "SOW_ESTIMATED_COST",
+      "description": "Cost per task (hours × rate). Insert newline-delimited values matching task order.",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "workflow": {
+    "description": "5-Step Workflow: Initiation → Data Capture → Validation → Preview → Output",
+    "conditionals": [
+      {
+        "condition": "User chooses 'step-by-step' or 'walk through'",
+        "action": "Walk through each placeholder sequentially, prompting for each field in order"
+      },
+      {
+        "condition": "User chooses 'autocomplete' or 'paste' or 'upload' or 'rough notes'",
+        "action": "Prompt user to paste/upload all notes at once, parse and auto-fill sections, ask for clarification only on missing or conflicting data"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Step 1: Initiation & Context Check",
+        "description": "When user says 'create a SOW', scan conversation for any info already provided. Acknowledge what you know. Ask user: 'Would you like to complete the rest step-by-step, or autocomplete by pasting/uploading your rough notes?'",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Step 2: Data Capture - SOW Basics",
+        "description": "Collect SOW number/title, consultant details, and client name. Confirm legal client name with user (check Companies Office website).",
+        "promptsFor": ["SOW_NUMBER_AND_TITLE", "SOW_CONSULTANT", "SOW_CONSULTANT_ROLE", "SOW_CLIENT_NAME"],
+        "offerSuggestion": true,
+        "validation": "pattern"
+      },
+      {
+        "title": "Step 2: Data Capture - Service Details",
+        "description": "Collect service description, approach, assumptions, exclusions, and deliverables. Ensure no duplication across these sections.",
+        "promptsFor": ["SOW_SERVICE_DESCRIPTION", "SOW_APPROACH", "SOW_ASSUMPTIONS", "SOW_EXCLUSIONS", "SOW_FORMAL_DELIVERABLES"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Step 2: Data Capture - Billing & Reporting",
+        "description": "Collect billing contact details, reporting requirements, and billing basis.",
+        "promptsFor": ["SOW_CLIENT_BILLING_CONTACT", "SOW_BILLING_CONTACT_COMPANY_NAME", "SOW_BILLING_CONTACT_EMAIL", "SOW_REPORTING", "SOW_BILLING_BASIS"],
+        "offerSuggestion": true,
+        "validation": "email"
+      },
+      {
+        "title": "Step 2: Data Capture - Tasks & Costs",
+        "description": "Collect task descriptions, hours per task, and calculate costs. Automatically calculate SOW_COST_AMOUNT = SOW_COST_HOURS × SOW_CONSULTANT_RATE. For task hours and estimated costs, insert newline-delimited values inside single cells.",
+        "promptsFor": ["SOW_TASK_DESCRIPTION", "SOW_TASK_HOURS", "SOW_CONSULTANT_RATE"],
+        "offerSuggestion": true,
+        "validation": "numeric"
+      },
+      {
+        "title": "Step 3: Validation",
+        "description": "Validate all numeric fields (SOW_COST_HOURS, SOW_CONSULTANT_RATE, SOW_COST_AMOUNT). Validate email contains '@'. Validate SOW_BILLING_BASIS is 'Fixed Cost' or 'Time and Materials'. If any field is missing or invalid, prompt for correction.",
+        "promptsFor": [],
+        "validation": "numeric,email,enum"
+      },
+      {
+        "title": "Step 4: Preview (Mandatory)",
+        "description": "Display a draft preview of the SOW. Show all populated fields. Ask the user to review and confirm or request specific changes. DO NOT generate the DOCX until user explicitly confirms.",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Step 5: Final Output",
+        "description": "Only after explicit user confirmation, populate the template SOW_Simple_Service_Template_Latest.docx with all placeholder values. Ensure all placeholders are replaced with confirmed data or marked as 'TBD'. Save the document with a sanitized filename (remove /, \\, :, *, ?, \", <, >, |).",
+        "promptsFor": [],
+        "offerSuggestion": false
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "SOW_NUMBER_AND_TITLE",
+      "type": "pattern",
+      "pattern": "^[A-Z][A-Za-z0-9 ]+ - SOW\\d+ - .+",
+      "message": "Title must be in format: 'Company Name - SOW## - Work Name'"
+    },
+    {
+      "field": "SOW_COST_HOURS",
+      "type": "numeric",
+      "message": "Hours must be a number (e.g., 40, not 'forty')"
+    },
+    {
+      "field": "SOW_CONSULTANT_RATE",
+      "type": "numeric",
+      "message": "Rate must be a number in NZD (e.g., 150, not 'one hundred fifty')"
+    },
+    {
+      "field": "SOW_COST_AMOUNT",
+      "type": "numeric",
+      "message": "Total cost must be a number"
+    },
+    {
+      "field": "SOW_BILLING_CONTACT_EMAIL",
+      "type": "email",
+      "message": "Email must contain @ (e.g., name@company.com)"
+    },
+    {
+      "field": "SOW_BILLING_BASIS",
+      "type": "enum",
+      "values": ["Fixed Cost", "Time and Materials"],
+      "message": "Must be 'Fixed Cost' or 'Time and Materials'"
+    }
+  ],
+  "templates": [
+    "SOW_Simple_Service_Template_Latest.docx"
+  ],
+  "references": [
+    {
+      "name": "SOW09 - Partners Life - Shared APIM",
+      "description": "Example SOW for API management project with Partners Life"
+    },
+    {
+      "name": "SOW12 - Partners Life - Certificate Investigation and Remediation Plan",
+      "description": "Example SOW for certificate investigation and remediation"
+    },
+    {
+      "name": "SOW14 - CrowdStrike Logging Connector",
+      "description": "Example SOW for CrowdStrike logging connector implementation"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Create SOW for Cloud Migration",
+      "user_says": "Create a SOW for Acme Corp cloud migration project",
+      "actions": [
+        "Acknowledge: 'I see this is for ACME Corp. Would you like to complete the rest step-by-step, or autocomplete by pasting/uploading your rough notes?'",
+        "Collect SOW number/title (e.g., 'ACME Corp - SOW01 - Cloud Migration Assessment')",
+        "Collect consultant name and role",
+        "Confirm legal client name (check Companies Office)",
+        "Collect service description, approach, assumptions, exclusions, deliverables",
+        "Collect billing contact details",
+        "Collect task breakdown with hours",
+        "Calculate total cost (hours × rate)",
+        "Show preview for review",
+        "Generate Word document after confirmation"
+      ],
+      "result": "Complete SOW document saved as 'ACME-Corp-SOW01-Cloud-Migration-Assessment.docx'"
+    },
+    {
+      "title": "Autocomplete with Rough Notes",
+      "user_says": "Create a SOW - here's my rough notes: Acme Corp, Sarah as consultant, SharePoint setup, 40 hours at $150/hr, fixed price, deliverables include migration plan and training docs",
+      "actions": [
+        "Parse rough notes and auto-fill: SOW_NUMBER_AND_TITLE, SOW_CONSULTANT, SOW_SERVICE_DESCRIPTION",
+        "Ask for clarification on missing fields (e.g., SOW number format, approach, assumptions)",
+        "Calculate SOW_COST_AMOUNT = 40 × 150 = $6,000",
+        "Show preview for user to review",
+        "Generate document after confirmation"
+      ],
+      "result": "SOW document with auto-filled fields from rough notes"
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Placeholder not replaced in output",
+      "cause": "Field was left empty or marked as TBD",
+      "solution": "Ensure all required fields are populated before generating DOCX"
+    },
+    {
+      "error": "Document not saving",
+      "cause": "Invalid characters in filename (/, \\, :, *, ?, \", <, >, |)",
+      "solution": "Remove special characters from filename. Use hyphens or underscores instead."
+    },
+    {
+      "error": "Email validation fails",
+      "cause": "Email address missing @ symbol",
+      "solution": "Ensure email contains @ and valid domain (e.g., name@company.com)"
+    },
+    {
+      "error": "Total cost calculation wrong",
+      "cause": "Hours or rate entered as text instead of numbers",
+      "solution": "Enter numeric values only (e.g., 80 hours, not 'eighty hours')"
+    },
+    {
+      "error": "Duplication across sections",
+      "cause": "Same content in Service Description, Approach, Assumptions, or Exclusions",
+      "solution": "Keep Service Description high-level. Each section should have distinct content."
+    }
+  ]
+}

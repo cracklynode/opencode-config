@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "name": "create-a-diagram",
+    "description": "Guides users through creating Mermaid or Draw.io diagrams based on their input",
+    "version": "1.0.0",
+    "author": "nick.foard",
+    "category": "documentation",
+    "tags": ["diagram", "mermaid", "drawio", "visual", "modelling"]
+  },
+  "triggers": [
+    "Let's create a diagram",
+    "I want to create a diagram",
+    "Create a diagram"
+  ],
+  "when_to_use": "When you need to create a visual diagram (flowchart, sequence diagram, etc.) using Mermaid syntax or Draw.io XML",
+  "mcp": "",
+  "purpose": "Guide the user through creating a business analysis diagram and generate either Mermaid Syntax or Draw.io XML based on user input",
+  "tone": "Professional, helpful, and precise. Ask clear questions and use only information provided by the user.",
+  "placeholders": [
+    {
+      "name": "DIAGRAM_TYPE",
+      "description": "Type of diagram to create",
+      "type": "enum",
+      "values": ["Flowchart", "Sequence Diagram", "Class Diagram", "State Diagram", "Entity Relationship Diagram", "Gantt Chart", "Pie Chart", "Other"],
+      "required": true,
+      "validation": "Must be a valid diagram type"
+    },
+    {
+      "name": "DIAGRAM_NAME",
+      "description": "Name of the diagram",
+      "type": "string",
+      "required": true,
+      "validation": "Required"
+    },
+    {
+      "name": "PROCESS_NOTES",
+      "description": "Detailed notes that explain what you want to model, upload files or copy in your notes",
+      "type": "string",
+      "required": true,
+      "validation": "Required - describe the process or system"
+    },
+    {
+      "name": "REQUIREMENTS",
+      "description": "Business requirements and solution design details that are relevant to this diagram",
+      "type": "string",
+      "required": false,
+      "validation": "Optional"
+    },
+    {
+      "name": "OUTPUT_FORMAT",
+      "description": "Output format for the diagram",
+      "type": "enum",
+      "values": ["Mermaid Syntax", "Draw.io XML"],
+      "required": true,
+      "validation": "Must be 'Mermaid Syntax' or 'Draw.io XML'"
+    }
+  ],
+  "workflow": {
+    "conditionals": [
+      {
+        "condition": "OUTPUT_FORMAT is 'Mermaid Syntax'",
+        "action": "Generate Mermaid syntax compatible with Mermaid.live"
+      },
+      {
+        "condition": "OUTPUT_FORMAT is 'Draw.io XML'",
+        "action": "Generate Draw.io-compatible XML file"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Step 0: Diagram Type",
+        "description": "Ask the user what type of diagram they want to create",
+        "promptsFor": ["DIAGRAM_TYPE"],
+        "offerSuggestion": true,
+        "validation": "required"
+      },
+      {
+        "title": "Step 1: Diagram Name",
+        "description": "Ask the user for the name of the diagram",
+        "promptsFor": ["DIAGRAM_NAME"],
+        "validation": "required"
+      },
+      {
+        "title": "Step 2: Process Notes",
+        "description": "Ask for detailed notes explaining what to model",
+        "promptsFor": ["PROCESS_NOTES"],
+        "validation": "required"
+      },
+      {
+        "title": "Step 3: Requirements",
+        "description": "Ask for business requirements and solution design details",
+        "promptsFor": ["REQUIREMENTS"],
+        "validation": "optional"
+      },
+      {
+        "title": "Step 4: Output Format",
+        "description": "Ask whether to create Mermaid Syntax or Draw.io XML",
+        "promptsFor": ["OUTPUT_FORMAT"],
+        "validation": "required"
+      },
+      {
+        "title": "Step 5: Generate Diagram",
+        "description": "Generate the diagram code based on all collected information",
+        "promptsFor": [],
+        "validation": "none"
+      }
+    ]
+  },
+  "validation": [],
+  "templates": [],
+  "examples": [
+    {
+      "title": "Basic Flowchart",
+      "user_says": "Let's create a diagram - Flowchart, Approval Process, Start -> Manager Review -> Approved/Rejected -> End, Standard approval workflow, Mermaid Syntax",
+      "actions": [
+        "Collect DIAGRAM_TYPE = Flowchart",
+        "Collect DIAGRAM_NAME = Approval Process",
+        "Collect PROCESS_NOTES = Start -> Manager Review -> Approved/Rejected -> End",
+        "Collect REQUIREMENTS = Standard approval workflow",
+        "Collect OUTPUT_FORMAT = Mermaid Syntax",
+        "Generate Mermaid syntax"
+      ],
+      "result": "```mermaid\nflowchart TD\n    A[Start] --> B{Manager Review}\n    B -->|Approved| C[Process Complete]\n    B -->|Rejected| D[Revise and Resubmit]\n    D --> B\n```"
+    },
+    {
+      "title": "Sequence Diagram",
+      "user_says": "I want to create a diagram - Sequence Diagram, Login Flow, User login process, Mermaid Syntax",
+      "actions": [
+        "Collect DIAGRAM_TYPE = Sequence Diagram",
+        "Collect DIAGRAM_NAME = Login Flow",
+        "Collect PROCESS_NOTES = User enters credentials, system validates, database checks, result returned",
+        "Collect REQUIREMENTS = Basic authentication flow",
+        "Collect OUTPUT_FORMAT = Mermaid Syntax",
+        "Generate Mermaid syntax"
+      ],
+      "result": "```mermaid\nsequenceDiagram\n    participant U as User\n    participant S as System\n    participant D as Database\n    U->>S: Enter credentials\n    S->>D: Validate\n    D-->>S: Result\n    S-->>U: Login success/fail\n```"
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "Invalid Mermaid syntax",
+      "cause": "Syntax errors in Mermaid diagram definition",
+      "solution": "Ensure proper syntax: nodes in brackets [], decisions in braces {}, arrows with --> . Test at mermaid.live"
+    },
+    {
+      "error": "Invalid Draw.io XML",
+      "cause": "XML does not follow Draw.io schema",
+      "solution": "Ensure XML follows Draw.io schema with proper mxGraph structure. Test by importing into Draw.io"
+    },
+    {
+      "error": "Missing required information",
+      "cause": "User did not provide all required details",
+      "solution": "Ensure all required placeholders (DIAGRAM_TYPE, DIAGRAM_NAME, PROCESS_NOTES, OUTPUT_FORMAT) are provided"
+    }
+  ]
+}
