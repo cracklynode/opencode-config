@@ -1,0 +1,196 @@
+{
+  "metadata": {
+    "name": "staff-one-on-one",
+    "description": "Converts one-on-one meeting transcripts into a structured summary using the One-on-One Meeting Notes Template",
+    "version": "1.0.0",
+    "author": "Nick Foard",
+    "category": "business",
+    "tags": ["one-on-one", "meeting", "notes", "transcript", "summary", "hr"]
+  },
+  "triggers": [
+    "one on one",
+    "1:1 notes",
+    "staff meeting",
+    "1-on-1 summary"
+  ],
+  "when_to_use": "This skill activates when the user wants to convert a one-on-one meeting transcript into a structured summary document.",
+  "mcp": "word",
+  "purpose": "Generate structured one-on-one meeting summaries from transcripts, populate the template, convert to PDF for emailing to staff.",
+  "tone": "Professional, concise, action-oriented. Use bullet points for readability. Capture key insights without including full transcript.",
+  "placeholders": [
+    {
+      "name": "STAFF_NAME",
+      "description": "Name of the direct report (staff member)",
+      "type": "string",
+      "required": true,
+      "validation": "required"
+    },
+    {
+      "name": "MANAGER_NAME",
+      "description": "Name of the manager conducting the one-on-one",
+      "type": "string",
+      "required": true,
+      "validation": "required"
+    },
+    {
+      "name": "MEETING_DATE",
+      "description": "Date of the one-on-one meeting (dd-mm-yyyy)",
+      "type": "date",
+      "required": true,
+      "validation": "date"
+    },
+    {
+      "name": "TRANSCRIPT",
+      "description": "The meeting transcript - either pasted text or path to Word file",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "CHECK_IN",
+      "description": "Summary for Section 1: Check-in - How are they doing, anything top of mind?",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "REVIEW_LAST_MONTH",
+      "description": "Summary for Section 2: Review of Last Month - wins, challenges, what's working/not",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "CURRENT_FOCUS",
+      "description": "Summary for Section 3: Current Focus - priorities, resources needed, escalations",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "CAREER_DEVELOPMENT",
+      "description": "Summary for Section 4: Career & Development - skills, under-utilised areas, support needed",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "FEEDBACK_EXCHANGE",
+      "description": "Summary for Section 5: Feedback Exchange - manager feedback, staff feedback, start/stop/continue",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "LOOKING_AHEAD",
+      "description": "Summary for Section 6: Looking Ahead & Wrap-up - key actions, upcoming changes, final thoughts",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "workflow": {
+    "description": "5-Step Workflow: Initiation → Extract → Preview → Confirm → Generate PDF",
+    "conditionals": [
+      {
+        "condition": "User pastes transcript text directly",
+        "action": "Parse the pasted text and extract content for each section"
+      },
+      {
+        "condition": "User provides path to Word transcript file",
+        "action": "Read the Word document using word_get_document_text, then parse and extract"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Initiation & Transcript Collection",
+        "description": "When user invokes skill, ask for the transcript. Acknowledge what you know. Ask: 'Please provide the meeting transcript - either paste the text here, or give me the path to the Word file.'",
+        "promptsFor": ["STAFF_NAME", "MANAGER_NAME", "MEETING_DATE", "TRANSCRIPT"],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Extract & Populate Sections",
+        "description": "Parse the transcript and populate each of the 6 template sections. Use bullet points for readability. Do NOT include full transcript - only summarize key points.",
+        "promptsFor": ["CHECK_IN", "REVIEW_LAST_MONTH", "CURRENT_FOCUS", "CAREER_DEVELOPMENT", "FEEDBACK_EXCHANGE", "LOOKING_AHEAD"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Preview (Mandatory)",
+        "description": "Display a draft preview of all 6 sections in the OpenCode terminal. Show the populated fields clearly. Ask user to review and confirm. DO NOT generate PDF until user explicitly confirms with 'yes', 'looks good', or 'generate'.",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Confirm",
+        "description": "Wait for user confirmation. If user requests changes, go back to Step 2 for that specific section. Only proceed to Step 5 after explicit confirmation.",
+        "promptsFor": [],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Generate PDF",
+        "description": "After confirmation: (1) Copy template to a new working document, (2) Populate Date/Manager/Staff name fields, (3) Populate each of the 6 section headings with summaries, (4) Use word_convert_to_pdf to create PDF, (5) Save to Downloads folder with filename format: '{StaffName}-{dd-mm-yyyy}-OneOnOneNotes.pdf'",
+        "promptsFor": [],
+        "offerSuggestion": false
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "STAFF_NAME",
+      "type": "required",
+      "message": "Staff member name is required"
+    },
+    {
+      "field": "MANAGER_NAME",
+      "type": "required",
+      "message": "Manager name is required"
+    },
+    {
+      "field": "MEETING_DATE",
+      "type": "required",
+      "message": "Meeting date is required"
+    }
+  ],
+  "templates": [
+    "One-on-One-Meeting-Notes-Template.docx"
+  ],
+  "section_mapping": {
+    "1. Check-in (5 min)": "CHECK_IN",
+    "2. Review of Last Month (10-15 min)": "REVIEW_LAST_MONTH",
+    "3. Current Focus (15 min)": "CURRENT_FOCUS",
+    "4. Career & Development (10 min)": "CAREER_DEVELOPMENT",
+    "5. Feedback Exchange (10 min)": "FEEDBACK_EXCHANGE",
+    "6. Looking Ahead & Wrap-up (5 min)": "LOOKING_AHEAD"
+  },
+  "output": {
+    "filename_format": "{STAFF_NAME}-{DATE}-OneOnOneNotes",
+    "date_format": "dd-mm-yyyy",
+    "output_folder": "Downloads",
+    "extension": "pdf"
+  },
+  "examples": [
+    {
+      "title": "Convert 1:1 Transcript to PDF",
+      "user_says": "Create one on one notes from this transcript for John Smith meeting on 11-03-2026",
+      "actions": [
+        "Collect: STAFF_NAME='John Smith', MANAGER_NAME, MEETING_DATE='11-03-2026'",
+        "Request transcript text or file path",
+        "Parse transcript and populate CHECK_IN, REVIEW_LAST_MONTH, CURRENT_FOCUS, CAREER_DEVELOPMENT, FEEDBACK_EXCHANGE, LOOKING_AHEAD",
+        "Display preview of all sections",
+        "Wait for user confirmation",
+        "Generate PDF: John-Smith-11-03-2026-OneOnOneNotes.pdf"
+      ],
+      "result": "PDF saved to Downloads folder"
+    }
+  ],
+  "common_errors": [
+    {
+      "error": "PDF not generating",
+      "cause": "Template not found or path incorrect",
+      "solution": "Ensure template is in templates/ folder relative to skill"
+    },
+    {
+      "error": "Sections not populated correctly",
+      "cause": "Transcript not parsed properly",
+      "solution": "Manually review each section and ensure content is extracted from transcript"
+    },
+    {
+      "error": "Filename has invalid characters",
+      "cause": "Staff name contains special characters",
+      "solution": "Sanitize staff name: replace spaces with hyphens, remove special chars"
+    }
+  ]
+}
