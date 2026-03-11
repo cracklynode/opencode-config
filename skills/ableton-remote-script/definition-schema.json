@@ -1,0 +1,255 @@
+{
+  "metadata": {
+    "name": "ableton-remote-script",
+    "description": "Create User Remote Scripts for Ableton Live to map MIDI controllers",
+    "version": "1.0.0",
+    "author": "Nick Foard",
+    "category": "development",
+    "tags": ["ableton", "midi", "controller", "remote-script", "instant-mappings"]
+  },
+  "purpose": "Generate a UserConfiguration.txt file for Ableton Live's InstantMappings feature, mapping a MIDI controller's CCs to Live's transport, mixer, and device controls",
+  "tone": "Technical, precise, and practical. Focus on getting the CC mappings correct.",
+  "placeholders": [
+    {
+      "name": "CONTROLLER_NAME",
+      "description": "Name of your MIDI controller (will be the folder name)",
+      "type": "string",
+      "required": true,
+      "validation": "Must start with a letter, no special characters except underscore"
+    },
+    {
+      "name": "INPUT_PORT",
+      "description": "Input port name as shown in Ableton MIDI preferences",
+      "type": "string",
+      "required": true,
+      "example": "nanoKONTROL2 (SLIDER/KNOB)"
+    },
+    {
+      "name": "OUTPUT_PORT",
+      "description": "Output port name as shown in Ableton MIDI preferences",
+      "type": "string",
+      "required": true,
+      "example": "nanoKONTROL2 (CTRL)"
+    },
+    {
+      "name": "MIDI_CHANNEL",
+      "description": "Global MIDI channel (0-15)",
+      "type": "number",
+      "required": true,
+      "default": 0,
+      "validation": "Must be between 0 and 15"
+    },
+    {
+      "name": "TRANSPORT_PLAY_CC",
+      "description": "CC# for Play button",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127"
+    },
+    {
+      "name": "TRANSPORT_STOP_CC",
+      "description": "CC# for Stop button",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127"
+    },
+    {
+      "name": "TRANSPORT_REWIND_CC",
+      "description": "CC# for Rewind button",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127"
+    },
+    {
+      "name": "TRANSPORT_FFWD_CC",
+      "description": "CC# for Fast Forward button",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127"
+    },
+    {
+      "name": "TRANSPORT_REC_CC",
+      "description": "CC# for Record button",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127"
+    },
+    {
+      "name": "TRANSPORT_LOOP_CC",
+      "description": "CC# for Loop button",
+      "type": "number",
+      "required": false,
+      "validation": "Must be between 0 and 127 or -1 to disable"
+    },
+    {
+      "name": "FADER_START_CC",
+      "description": "Starting CC# for the 8 faders (channel strips 1-8)",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127",
+      "example": "If faders are CC 0-7, enter 0"
+    },
+    {
+      "name": "KNOB_START_CC",
+      "description": "Starting CC# for the 8 knobs/encoders (channel strips 1-8)",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127",
+      "example": "If knobs are CC 16-23, enter 16"
+    },
+    {
+      "name": "MUTE_START_CC",
+      "description": "Starting CC# for the 8 Mute buttons (channel strips 1-8)",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127",
+      "example": "If mute buttons are CC 48-55, enter 48"
+    },
+    {
+      "name": "SOLO_START_CC",
+      "description": "Starting CC# for the 8 Solo buttons (channel strips 1-8)",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127",
+      "example": "If solo buttons are CC 32-39, enter 32"
+    },
+    {
+      "name": "RECORD_ARM_START_CC",
+      "description": "Starting CC# for the 8 Record Arm buttons (channel strips 1-8)",
+      "type": "number",
+      "required": true,
+      "validation": "Must be between 0 and 127",
+      "example": "If record buttons are CC 64-71, enter 64"
+    },
+    {
+      "name": "BANK_PREV_CC",
+      "description": "CC# for Previous Bank button (or Track Prev if no dedicated bank button)",
+      "type": "number",
+      "required": false,
+      "validation": "Must be between 0 and 127 or -1 to disable"
+    },
+    {
+      "name": "BANK_NEXT_CC",
+      "description": "CC# for Next Bank button (or Track Next if no dedicated bank button)",
+      "type": "number",
+      "required": false,
+      "validation": "Must be between 0 and 127 or -1 to disable"
+    },
+    {
+      "name": "OUTPUT_FOLDER",
+      "description": "Folder path where the script should be created",
+      "type": "string",
+      "required": true,
+      "default": "My_Custom_UserRemote_Scripts"
+    }
+  ],
+  "workflow": {
+    "conditionals": [
+      {
+        "condition": "User has a mapping document (like nanoKontrol2mappings.md)",
+        "action": "Ask for the file path or offer to read from a standard location"
+      },
+      {
+        "condition": "User wants to map all controls",
+        "action": "Gather all CC mappings"
+      },
+      {
+        "condition": "User only wants specific controls",
+        "action": "Allow optional controls to be set to -1 (disabled)"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Controller Information",
+        "description": "Get the basic controller details",
+        "promptsFor": ["CONTROLLER_NAME", "INPUT_PORT", "OUTPUT_PORT", "MIDI_CHANNEL"],
+        "offerSuggestion": false
+      },
+      {
+        "title": "Transport Controls",
+        "description": "Map the transport buttons (Play, Stop, Rewind, Fast Forward, Record, Loop)",
+        "promptsFor": ["TRANSPORT_PLAY_CC", "TRANSPORT_STOP_CC", "TRANSPORT_REWIND_CC", "TRANSPORT_FFWD_CC", "TRANSPORT_REC_CC", "TRANSPORT_LOOP_CC"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Channel Strip Controls",
+        "description": "Map the 8 channel strips - faders, knobs, mute, solo, and record arm buttons. Enter the STARTING CC# for each group.",
+        "promptsFor": ["FADER_START_CC", "KNOB_START_CC", "MUTE_START_CC", "SOLO_START_CC", "RECORD_ARM_START_CC"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Bank Switching",
+        "description": "Map bank/track navigation buttons (optional)",
+        "promptsFor": ["BANK_PREV_CC", "BANK_NEXT_CC"],
+        "offerSuggestion": true
+      },
+      {
+        "title": "Generate Script",
+        "description": "Create the UserConfiguration.txt file in the specified folder",
+        "promptsFor": ["OUTPUT_FOLDER"],
+        "offerSuggestion": false
+      }
+    ]
+  },
+  "validation": [
+    {
+      "field": "CONTROLLER_NAME",
+      "type": "pattern",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "message": "Controller name must start with a letter and contain only letters, numbers, or underscores"
+    },
+    {
+      "field": "MIDI_CHANNEL",
+      "type": "range",
+      "min": 0,
+      "max": 15,
+      "message": "MIDI channel must be between 0 and 15"
+    },
+    {
+      "field": "TRANSPORT_PLAY_CC",
+      "type": "range",
+      "min": 0,
+      "max": 127,
+      "message": "CC must be between 0 and 127"
+    },
+    {
+      "field": "FADER_START_CC",
+      "type": "range",
+      "min": 0,
+      "max": 127,
+      "message": "CC must be between 0 and 127"
+    }
+  ],
+  "templates": [
+    "My_Custom_UserRemote_Scripts/nanoKEY Studio_NF/UserConfiguration.txt",
+    "My_Custom_UserRemote_Scripts/nanoKONTROL2_NF/UserConfiguration.txt",
+    "Ableton_Template_and_instructions/UserConfiguration.txt"
+  ],
+  "examples": [
+    {
+      "title": "nanoKONTROL2 Script Creation",
+      "description": "Example of creating a script for the Korg nanoKONTROL2",
+      "input": {
+        "CONTROLLER_NAME": "nanoKONTROL2_NF",
+        "INPUT_PORT": "nanoKONTROL2 (SLIDER/KNOB)",
+        "OUTPUT_PORT": "nanoKONTROL2 (CTRL)",
+        "MIDI_CHANNEL": 0,
+        "TRANSPORT_PLAY_CC": 41,
+        "TRANSPORT_STOP_CC": 42,
+        "TRANSPORT_REWIND_CC": 43,
+        "TRANSPORT_FFWD_CC": 44,
+        "TRANSPORT_REC_CC": 45,
+        "TRANSPORT_LOOP_CC": 46,
+        "FADER_START_CC": 0,
+        "KNOB_START_CC": 16,
+        "MUTE_START_CC": 48,
+        "SOLO_START_CC": 32,
+        "RECORD_ARM_START_CC": 64,
+        "BANK_PREV_CC": 58,
+        "BANK_NEXT_CC": 59,
+        "OUTPUT_FOLDER": "My_Custom_UserRemote_Scripts"
+      },
+      "output": "Created My_Custom_UserRemote_Scripts/nanoKONTROL2_NF/UserConfiguration.txt"
+    }
+  ]
+}
