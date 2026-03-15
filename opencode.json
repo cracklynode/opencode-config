@@ -32,5 +32,20 @@
       "command": ["npx", "-y", "@azure-devops/mcp", "EquinoxIT"],
       "enabled": true
     }
+  },
+  "provider": {
+    "ollama": {
+      "models": {
+        "qwen3:4b": {
+          "_launch": true,
+          "name": "qwen3:4b"
+        }
+      },
+      "name": "Ollama (local)",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1"
+      }
+    }
   }
 }
